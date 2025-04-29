@@ -1,0 +1,31 @@
+[project]
+name = "hush-transcribe-service"
+version = "0.1.0"
+description = "Transcription and speaker diarization from audio"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "typed-ffmpeg>=2.7.3",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/tests/**/*.py" = ["S101"]
+"src/tests/*.py" = ["S101"]
+
+[tool.pyright]
+strict = ['src']
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.400",
+    "pytest>=8.3.5",
+    "ruff>=0.11.7",
+    "uv>=0.6.17",
+]
