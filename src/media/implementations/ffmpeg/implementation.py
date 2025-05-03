@@ -18,7 +18,7 @@ class FfmpegPreparingService(MediaPreparationService):
     """Implementation preparing strategy. Using ffmpeg for preparing."""
 
     @contextmanager
-    def get_prepared_filepath(self, filename: Path) -> Iterator[io.BufferedReader]:
+    def get_prepared_file(self, filename: Path) -> Iterator[io.BufferedReader]:
         """Return path to prepared audio file."""
         if not filename.exists():
             msg = f"File: ({filename}) not found"
