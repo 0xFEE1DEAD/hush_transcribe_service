@@ -5,6 +5,7 @@ description = "Transcription and speaker diarization from audio"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "click>=8.1.8",
     "faster-whisper>=1.1.1",
     "intervaltree>=3.1.0",
     "pyannote-audio>=3.3.2",

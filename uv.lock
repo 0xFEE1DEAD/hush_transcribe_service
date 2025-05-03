@@ -658,6 +658,7 @@ name = "hush-transcribe-service"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "click" },
     { name = "faster-whisper" },
     { name = "intervaltree" },
     { name = "pyannote-audio" },
@@ -675,6 +676,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.1.8" },
     { name = "faster-whisper", specifier = ">=1.1.1" },
     { name = "intervaltree", specifier = ">=3.1.0" },
     { name = "pyannote-audio", specifier = ">=3.3.2" },

@@ -29,5 +29,5 @@ class PyannoteDiarizationService(DiarizationService):
         diarization = pipeline(file)
 
         for turn, _, speaker in diarization.itertracks(yield_label=True):
-            if (turn.end - turn.start) > 0.05:
+            if (turn.end - turn.start) > 0.1:
                 yield SpeakerSegment((turn.start, turn.end), speaker)
