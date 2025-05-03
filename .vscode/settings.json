@@ -3,7 +3,7 @@
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.fixAll": "explicit"
+            "source.organizeImports.ruff": "explicit"
         },
     },
     "cSpell.language": "en,ru",

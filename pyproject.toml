@@ -5,6 +5,10 @@ description = "Transcription and speaker diarization from audio"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "faster-whisper>=1.1.1",
+    "intervaltree>=3.1.0",
+    "pyannote-audio>=3.3.2",
+    "torch",
     "typed-ffmpeg>=2.7.3",
 ]
 
@@ -21,6 +25,10 @@ select = ["ALL"]
 
 [tool.pyright]
 strict = ['src']
+ignore = ['src/diarization/implementations/pyannote/speaker-diarization-3.1']
+
+[tool.uv.sources]
+torch = { url = "https://download.pytorch.org/whl/cu124/torch-2.5.0%2Bcu124-cp311-cp311-win_amd64.whl" }
 
 [dependency-groups]
 dev = [

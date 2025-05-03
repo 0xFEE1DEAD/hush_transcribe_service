@@ -6,11 +6,15 @@ For create virtual environment and install dependencies use command
 ```
 uv sync
 ```
-For run scripts use command
+run scripts use command
 ```
 uv run <file>
 ```
-For run tests
+run tests
 ```
 uv run pytest
+```
+run static analysis
+```
+uv run pyright
 ```
