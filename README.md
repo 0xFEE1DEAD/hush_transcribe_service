@@ -2,6 +2,11 @@
 
 This project requires uv package manager. For install it please visit this page https://docs.astral.sh/uv/getting-started/installation/
 
+Needs to update submodules
+```
+git submodule update --init --recursive
+```
+
 For create virtual environment and install dependencies use command
 ```
 uv sync
