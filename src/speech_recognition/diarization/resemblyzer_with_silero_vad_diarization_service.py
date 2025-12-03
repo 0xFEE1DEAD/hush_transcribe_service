@@ -69,11 +69,8 @@ class ResemblyzerWithSileroVADDiarizationService(DiarizationService):
             if len(segment) < need_samples_count:
                 segment = np.pad(segment, (0, need_samples_count - len(segment)))
 
-            try:
-                embeddings.append(self.__embeddings_model.embed_utterance(segment))  # pyright: ignore[reportOptionalMemberAccess, reportUnknownMemberType]
-                valid_segments.append({"start": start, "end": end})  # pyright: ignore[reportUnknownMemberType]
-            except Exception:  # noqa: BLE001, S112
-                continue
+            embeddings.append(self.__embeddings_model.embed_utterance(segment))  # pyright: ignore[reportOptionalMemberAccess, reportUnknownMemberType]
+            valid_segments.append({"start": start, "end": end})  # pyright: ignore[reportUnknownMemberType]
 
         return np.array(embeddings), valid_segments  # pyright: ignore[reportUnknownVariableType, reportUnknownArgumentType]
 
