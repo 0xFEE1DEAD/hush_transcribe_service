@@ -12,7 +12,7 @@ from silero_vad import (  # pyright: ignore[reportMissingTypeStubs]
     get_speech_timestamps,  # pyright: ignore[reportUnknownVariableType]
     load_silero_vad,
 )
-from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import AgglomerativeClustering  # pyright: ignore[reportMissingTypeStubs]
 
 from .interfaces import DiarizationService, SpeakerSegment
 
@@ -80,14 +80,14 @@ class ResemblyzerWithSileroVADDiarizationService(DiarizationService):
     def __clustering(self, embeddings: np.ndarray, segments: list[dict[str, float]]) -> Iterator[SpeakerSegment]:
         if len(embeddings) > 1:
             clustering = AgglomerativeClustering(
-                n_clusters=self.n_speakers,
+                n_clusters=self.n_speakers,  # pyright: ignore[reportArgumentType]
                 distance_threshold=0.90 if self.n_speakers is None else None,
             )
-            labels = clustering.fit_predict(embeddings)
+            labels = clustering.fit_predict(embeddings)  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
 
             for i, seg in enumerate(segments):
                 if seg["end"] - seg["start"] > self.__MIN_SEGMENT_LENGTH:
                     yield SpeakerSegment(
                         time=(seg["start"], seg["end"]),
-                        key=labels[i],
+                        key=f"SPEAKER_{labels[i]}",
                     )
