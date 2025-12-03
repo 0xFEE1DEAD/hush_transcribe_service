@@ -1,1 +1,0 @@
-"""Pyannote implementation module."""

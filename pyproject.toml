@@ -3,15 +3,18 @@ name = "hush-transcribe-service"
 version = "0.1.0"
 description = "Transcription and speaker diarization from audio"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
-    "click>=8.1.8",
     "faster-whisper>=1.1.1",
     "intervaltree>=3.1.0",
-    "pyannote-audio>=3.3.2",
-    "torch",
+    "librosa>=0.11.0",
+    "resemblyzer>=0.1.4",
+    "silero-vad>=6.2.0",
     "typed-ffmpeg>=2.7.3",
 ]
+
+[dependency-groups]
+dev = ["bandit>=1.9.2", "pyright>=1.1.400", "pytest>=8.3.5", "ruff>=0.11.7"]
 
 [tool.ruff]
 line-length = 120
@@ -19,22 +22,17 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["ALL"]
+ignore = ["D104", "D100", "D101", "D203", "D213", "D102"]
 
 [tool.ruff.lint.per-file-ignores]
-"src/tests/**/*.py" = ["S101"]
-"src/tests/*.py" = ["S101"]
+"tests/**/*.py" = ["S101"]
+"tests/*.py" = ["S101"]
 
 [tool.pyright]
 strict = ['src']
-ignore = ['src/diarization/implementations/pyannote/speaker-diarization-3.1']
 
-[tool.uv.sources]
-torch = { url = "https://download.pytorch.org/whl/cu124/torch-2.5.0%2Bcu124-cp311-cp311-win_amd64.whl" }
+[tool.pytest.ini_options]
+pythonpath = ["src"]
 
-[dependency-groups]
-dev = [
-    "pyright>=1.1.400",
-    "pytest>=8.3.5",
-    "ruff>=0.11.7",
-    "uv>=0.6.17",
-]
+[tool.setuptools.packages.find]
+where = ["src"]

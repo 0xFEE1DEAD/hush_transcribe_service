@@ -2,23 +2,22 @@
 
 from pathlib import Path
 
-import click
+from speech_recognition.diarization.interfaces import DiarizationService
+from speech_recognition.diarization.resemblyzer_with_silero_vad_diarization_service import (
+    ResemblyzerWithSileroVADDiarizationService,
+)
+from speech_recognition.interval_storage.interfaces import IntervalStorageService
+from speech_recognition.interval_storage.intervaltree_storage_service import IntervalTreeStorageService
+from speech_recognition.media.ffmpeg.ffmpeg_preparation_service import FfmpegPreparationService
+from speech_recognition.media.interfaces import MediaPreparationService
+from speech_recognition.output.csv_file_output_service import CsvFileOutputService
+from speech_recognition.output.interfaces import OutputService
+from speech_recognition.transcription.faster_whisper_service import FasterWhisperTranscriptionService
+from speech_recognition.transcription.interfaces import TranscriptionService
 
-from diarization.implementations import PyannoteDiarizationService
-from diarization.interfaces import DiarizationService
-from interval_storage.implementations import IntervalTreeStorageService
-from interval_storage.interfaces import IntervalStorageService
-from media.exceptions import MediaFileCanNotBeReadError
-from media.implementations import FfmpegPreparingService
-from media.interfaces import MediaPreparationService
-from output.implementations import CsvFileOutputService
-from output.interfaces import OutputService
-from transcription.implementations import FasterWhisperTranscriptionService
-from transcription.interfaces import TranscriptionService
 
-
-class App:
-    """Application container."""
+class TranscriptionPipeline:
+    """Transcription pipeline with aggregated high level logic."""
 
     def __init__(
         self,
@@ -50,48 +49,10 @@ class App:
                 self._output.output(segment.time[0], segment.time[1], "".join(interval_data), segment.key)
 
 
-def run_pipeline_once(path_to_media: Path, csv_file_path: Path) -> None:
-    """Run pipeline."""
-    app = App(
-        FfmpegPreparingService(),
-        PyannoteDiarizationService(),
-        FasterWhisperTranscriptionService(),
-        IntervalTreeStorageService(),
-        CsvFileOutputService(csv_file_path),
-    )
-
-    try:
-        app.run_pipeline(path_to_media)
-    except MediaFileCanNotBeReadError as e:
-        click.echo(f"File can not be read, may be invalid format file. Error: {e}", err=True)
-
-
-@click.command()
-@click.argument("path_to_media", type=click.Path(exists=True))
-@click.argument("csv_output_path", type=click.Path())
-def main(path_to_media: str, csv_output_path: str) -> None:
-    """Transcribe and diarization some media file (audio or video) to csv file."""
-    media_path = Path(path_to_media)
-    output_path = Path(csv_output_path)
-
-    if media_path.is_file() and (not output_path.exists() and str(output_path).lower().endswith(".csv")):
-        run_pipeline_once(media_path.resolve(), output_path.resolve())
-    elif media_path.is_dir() and output_path.exists() and output_path.is_dir():
-        for media_file in media_path.iterdir():
-            output_file_path = output_path / (media_file.stem + ".csv")
-            if media_file.is_file() and not output_file_path.exists():
-                resolved_input = media_file.resolve()
-                resolved_output = output_file_path.resolve()
-                click.echo(f"Start work with file: {resolved_input}, output dir: {resolved_output}")
-                run_pipeline_once(resolved_input, resolved_output)
-    else:
-        click.echo(
-            (
-                "The first and second arguments must either both be files or both be directories. "
-                "If they are files, the output must end with .csv."
-            ),
-        )
-
-
-if __name__ == "__main__":
-    main()
+transciption_pipeline = TranscriptionPipeline(
+    FfmpegPreparationService(),
+    ResemblyzerWithSileroVADDiarizationService(),
+    FasterWhisperTranscriptionService(),
+    IntervalTreeStorageService(),
+    CsvFileOutputService(Path("./test.csv")),
+).run_pipeline()
