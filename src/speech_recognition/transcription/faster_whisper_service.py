@@ -5,6 +5,7 @@ import io
 import queue
 import threading
 from collections.abc import AsyncIterator
+from pathlib import Path
 
 from aiofiles.threadpool.binary import AsyncBufferedReader
 from faster_whisper import WhisperModel  # type: ignore  # noqa: PGH003
@@ -13,9 +14,8 @@ from .interfaces import SpeechWord, TranscriptionService
 
 
 class FasterWhisperTranscriptionService(TranscriptionService):
-    def __init__(self, model_size: str = "./models/medium", device: str = "auto") -> None:
+    def __init__(self, device: str = "auto") -> None:
         """Init transcribe service."""
-        self._model_size = model_size
         self._device = device
         self._task_queue: queue.Queue[tuple[asyncio.Future[list[SpeechWord]], bytes] | None] = queue.Queue()
         self._stop_event = threading.Event()
@@ -25,7 +25,7 @@ class FasterWhisperTranscriptionService(TranscriptionService):
 
     def _inference_worker(self) -> None:
         """Рабочий поток: загружает модель и обрабатывает задачи."""
-        model = WhisperModel(self._model_size, device=self._device)
+        model = WhisperModel(str(Path("./models/medium")), device=self._device)
 
         while not self._stop_event.is_set():
             try:

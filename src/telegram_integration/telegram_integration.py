@@ -36,6 +36,7 @@ def get_pipeline(  # noqa: D103
     )
 
 
+# TODO(0xfee1dead): refactoring https://github.com/0xFEE1DEAD/hush_transcribe_service/issues/1  # noqa: FIX002
 class TelegramBotApp:
     def __init__(self, token: str) -> None:
         """Init telegram bot."""

@@ -1,3 +1,0 @@
-[submodule "src/diarization/implementations/pyannote/speaker-diarization-3.1"]
-	path = src/diarization/implementations/pyannote/speaker-diarization-3.1
-	url = https://huggingface.co/pyannote/speaker-diarization-3.1
