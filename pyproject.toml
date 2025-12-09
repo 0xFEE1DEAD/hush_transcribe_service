@@ -5,6 +5,9 @@ description = "Transcription and speaker diarization from audio"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiocsv>=1.4.0",
+    "aiofiles>=25.1.0",
+    "aiogram>=3.23.0",
     "faster-whisper>=1.1.1",
     "intervaltree>=3.1.0",
     "librosa>=0.11.0",

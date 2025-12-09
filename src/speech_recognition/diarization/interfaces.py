@@ -1,9 +1,10 @@
 """Contains interfaces for diarization module."""
 
-import io
-from collections.abc import Iterator
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Protocol
+
+from aiofiles.threadpool.binary import AsyncBufferedReader
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,10 @@ class SpeakerSegment:
 class DiarizationService(Protocol):
     """Interface for diarization strategy."""
 
-    def get_segments_from_file(self, file: io.BufferedReader) -> Iterator[SpeakerSegment]:
+    def get_segments_from_file(
+        self,
+        file: AsyncBufferedReader,
+        n_speakers: int | None = None,
+    ) -> AsyncIterator[SpeakerSegment]:
         """Return iterator with segments where speaker say in audio file."""
         ...

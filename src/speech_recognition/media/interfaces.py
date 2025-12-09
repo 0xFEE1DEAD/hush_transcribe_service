@@ -1,16 +1,15 @@
 """Contains interfaces for media module."""
 
-import io
-from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import AbstractAsyncContextManager
 from pathlib import Path
 from typing import Protocol
+
+from aiofiles.threadpool.binary import AsyncBufferedReader
 
 
 class MediaPreparationService(Protocol):
     """Interface for strategy preparing media for computing."""
 
-    @contextmanager
-    def get_prepared_file(self, filename: Path) -> Iterator[io.BufferedReader]:
+    def get_prepared_file(self, filename: Path) -> AbstractAsyncContextManager[AsyncBufferedReader]:
         """Return path to prepared audio file."""
         ...

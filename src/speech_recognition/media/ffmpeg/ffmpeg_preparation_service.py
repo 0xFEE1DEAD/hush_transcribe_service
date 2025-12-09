@@ -1,11 +1,11 @@
 """Ffmpeg implementation."""
 
-import io
+import asyncio
 import tempfile
-from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import asynccontextmanager
 from pathlib import Path
 
+import aiofiles
 import ffmpeg
 
 from speech_recognition.media.exceptions import MediaFileCanNotBeReadError, MediaFileNotFoundError, MediaUnknownError
@@ -17,15 +17,15 @@ from .exceptions import MediaFfmpegError
 class FfmpegPreparationService(MediaPreparationService):
     """Implementation preparing strategy. Using ffmpeg for preparing."""
 
-    @contextmanager
-    def get_prepared_file(self, filename: Path) -> Iterator[io.BufferedReader]:
+    @asynccontextmanager
+    async def get_prepared_file(self, filename: Path):  # noqa: ANN201
         """Return path to prepared audio file."""
         if not filename.exists():
             msg = f"File: ({filename}) not found"
             raise MediaFileNotFoundError(msg)
 
         try:
-            ffmpeg.probe(filename)
+            await asyncio.to_thread(ffmpeg.probe, filename)
         except Exception as e:
             raise MediaFileCanNotBeReadError from e
 
@@ -34,18 +34,28 @@ class FfmpegPreparationService(MediaPreparationService):
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmpfile:
                 tempfile_path = Path(tmpfile.name)
 
-            ffmpeg.input(filename).afftdn().loudnorm(I=-16, LRA=5, TP=0).output(filename=tempfile_path).run(
-                quiet=True,
-                overwrite_output=True,
-            )
+            await asyncio.to_thread(self.__run_ffmpeg_pipeline, filename, tempfile_path)
 
-            with Path.open(tempfile_path, "rb") as opened_file:
+            async with aiofiles.open(tempfile_path, "rb") as opened_file:
                 yield opened_file
+
         except ffmpeg.exceptions.FFMpegError as e:
             msg = "Ffmpeg runtime error"
             raise MediaFfmpegError(msg) from e
         except Exception as e:
             raise MediaUnknownError from e
         finally:
-            if tempfile_path is not None:
-                Path.unlink(tempfile_path)
+            if tempfile_path is not None and tempfile_path.exists():
+                tempfile_path.unlink()
+
+    def __run_ffmpeg_pipeline(self, filename: Path, tempfile_path: Path) -> None:
+        (
+            ffmpeg.input(filename)
+            .afftdn()
+            .loudnorm(I=-16, LRA=5, TP=0)
+            .output(filename=tempfile_path)
+            .run(
+                quiet=True,
+                overwrite_output=True,
+            )
+        )
