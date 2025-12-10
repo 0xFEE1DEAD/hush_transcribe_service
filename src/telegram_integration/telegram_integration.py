@@ -4,7 +4,9 @@ from pathlib import Path
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.enums import ContentType
 from aiogram.filters import CommandStart
-from aiogram.types import FSInputFile, Message
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import FSInputFile, KeyboardButton, Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 from speech_recognition.diarization.resemblyzer_with_silero_vad_diarization_service import (
     ResemblyzerWithSileroVADDiarizationService,
@@ -64,18 +66,48 @@ class TelegramBotApp:
                 },
             ),
         )
-        async def handle_media(message: Message) -> None:  # pyright: ignore[reportUnusedFunction]
+        async def handle_media(message: Message, state: FSMContext) -> None:  # pyright: ignore[reportUnusedFunction]
             file_id = self.__extract_file_id(message)
 
             if file_id is None:
                 await message.answer("Ой, кажется не удалось получить файл, попробуй загрузить снова")
                 return
 
+            await state.update_data(file_id=file_id)
+
+            speakers_keyboard = ReplyKeyboardMarkup(
+                keyboard=[
+                    [KeyboardButton(text="Авто")],
+                    [
+                        KeyboardButton(text="2"),
+                        KeyboardButton(text="3"),
+                        KeyboardButton(text="4"),
+                        KeyboardButton(text="5"),
+                    ],
+                ],
+                resize_keyboard=True,
+                one_time_keyboard=True,
+            )
+
+            # спрашиваем количество собеседников
+            await message.answer("Выбери количество собеседников:", reply_markup=speakers_keyboard)
+
+            # переходим в состояние
+            await state.set_state(DialogStates.waiting_for_speakers)
+
+        @self.router.message(DialogStates.waiting_for_speakers, F.text.in_(["Авто", "2", "3", "4", "5"]))
+        async def process_speakers_choice(message: Message, state: FSMContext) -> None:  # pyright: ignore[reportUnusedFunction]
+            user_choice = message.text
+            speakers = None if user_choice == "Авто" or user_choice is None else int(user_choice)
+            data = await state.get_data()
+            file_id = data["file_id"]
             tg_file = await self.bot.get_file(file_id)
 
             if tg_file.file_path is None:
                 await message.answer("Ой, кажется не удалось получить файл, попробуй загрузить снова")
                 return
+
+            await message.answer("Начинаю обработку…", reply_markup=ReplyKeyboardRemove())
 
             with tempfile.TemporaryDirectory() as tmpdir:
                 progress_message = await message.answer("Получаю файл, пожалуйста подожди.")
@@ -93,11 +125,13 @@ class TelegramBotApp:
                         observer,
                     )
 
-                    await pipeline.run_pipeline(Path(local_path), 2)
+                    await pipeline.run_pipeline(Path(local_path), speakers)
 
                 await message.answer_document(FSInputFile(csv_path))
                 await message.answer_document(FSInputFile(txt_path))
                 await message.answer_document(FSInputFile(simple_txt_path))
+
+            await state.clear()
 
     def __extract_file_id(self, message: Message) -> str | None:  # noqa: PLR0911
         if message.photo:
@@ -117,3 +151,8 @@ class TelegramBotApp:
 
     async def run(self) -> None:
         await self.dp.start_polling(self.bot)  # pyright: ignore[reportUnknownMemberType]
+
+
+class DialogStates(StatesGroup):
+    waiting_for_speakers = State()
+    waiting_for_file = State()

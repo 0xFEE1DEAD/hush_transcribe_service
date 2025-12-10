@@ -1,0 +1,7 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.cpu
+    environment:
+      TELEGRAM_API_KEY: ${TELEGRAM_API_KEY}
